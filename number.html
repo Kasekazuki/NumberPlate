@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>数独ソルバー</title>
+  <style>
+    table { border-collapse: collapse; }
+    td { width: 40px; height: 40px; text-align: center; border: 1px solid black; }
+    input { width: 35px; text-align: center; font-size: 18px; }
+    .bold-border { border: 2px solid black; }
+  </style>
+</head>
+<body>
+  <h2>数独ソルバー</h2>
+  <table id="board"></table>
+  <br>
+  <button onclick="solveSudoku()">解答する</button>
+  <button onclick="resetBoard()">リセット</button>
+
+  <script>
+    const SIZE = 9;
+    let boardElement = document.getElementById("board");
+
+    // 盤面を描画
+    function createBoard() {
+      for (let i = 0; i < SIZE; i++) {
+        let row = boardElement.insertRow();
+        for (let j = 0; j < SIZE; j++) {
+          let cell = row.insertCell();
+          let input = document.createElement("input");
+          input.type = "text";
+          input.maxLength = 1;
+          cell.appendChild(input);
+          // 3x3 の区切り線
+          if (j % 3 === 0) cell.style.borderLeft = "2px solid black";
+          if (i % 3 === 0) cell.style.borderTop = "2px solid black";
+        }
+      }
+    }
+
+    // 入力を配列に変換
+    function getBoard() {
+      let board = [];
+      for (let i = 0; i < SIZE; i++) {
+        board.push([]);
+        for (let j = 0; j < SIZE; j++) {
+          let val = boardElement.rows[i].cells[j].firstChild.value;
+          board[i].push(val === "" ? 0 : parseInt(val));
+        }
+      }
+      return board;
+    }
+
+    // 盤面に表示
+    function setBoard(board) {
+      for (let i = 0; i < SIZE; i++) {
+        for (let j = 0; j < SIZE; j++) {
+          boardElement.rows[i].cells[j].firstChild.value = board[i][j] === 0 ? "" : board[i][j];
+        }
+      }
+    }
+
+    // 数独ソルバー（バックトラッキング）
+    function solve(board) {
+      for (let i = 0; i < SIZE; i++) {
+        for (let j = 0; j < SIZE; j++) {
+          if (board[i][j] === 0) {
+            for (let num = 1; num <= 9; num++) {
+              if (isValid(board, i, j, num)) {
+                board[i][j] = num;
+                if (solve(board)) return true;
+                board[i][j] = 0;
+              }
+            }
+            return false;
+          }
+        }
+      }
+      return true;
+    }
+
+    function isValid(board, row, col, num) {
+      for (let i = 0; i < SIZE; i++) {
+        if (board[row][i] === num || board[i][col] === num) return false;
+      }
+      let sr = Math.floor(row / 3) * 3;
+      let sc = Math.floor(col / 3) * 3;
+      for (let i = 0; i < 3; i++) {
+        for (let j = 0; j < 3; j++) {
+          if (board[sr + i][sc + j] === num) return false;
+        }
+      }
+      return true;
+    }
+
+    function solveSudoku() {
+      let board = getBoard();
+      if (solve(board)) {
+        setBoard(board);
+        alert("解答完了！");
+      } else {
+        alert("解けませんでした。");
+      }
+    }
+
+    function resetBoard() {
+      boardElement.innerHTML = "";
+      createBoard();
+    }
+
+    createBoard();
+  </script>
+</body>
+</html>
